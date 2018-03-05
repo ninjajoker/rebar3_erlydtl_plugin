@@ -130,17 +130,11 @@ expand_opts(Opts) ->
 
 do(State) ->
     rebar_api:info("Running erlydtl...", []),
-    Apps = case rebar_state:current_app(State) of
-               undefined ->
-                   rebar_state:project_apps(State);
-               AppInfo ->
-                   [AppInfo]
-           end,
+    Apps = rebar_state:project_apps(State),
     [begin
          Opts = rebar_app_info:opts(AppInfo),
          Dir = rebar_app_info:dir(AppInfo),
          OutDir = rebar_app_info:ebin_dir(AppInfo),
-
          DtlOpts1 = proplists:unfold(rebar_opts:get(Opts, erlydtl_opts, [])),
          lists:foreach(fun(DtlOpts) ->
              TemplateDir = filename:join(Dir, option(doc_root, DtlOpts)),
@@ -148,7 +142,6 @@ do(State) ->
              TagDir = filename:join(Dir, option(custom_tags_dir, DtlOpts2)),
              DtlOpts3 = [{custom_tags_dir, TagDir} | proplists:delete(custom_tags_dir, DtlOpts2)],
              filelib:ensure_dir(filename:join(OutDir, "dummy.beam")),
-
              rebar_base_compiler:run(Opts,
                                      [],
                                      TemplateDir,
